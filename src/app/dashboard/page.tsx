@@ -1,6 +1,9 @@
 import { createServerClient } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
+// Add dynamic export to avoid prerendering during build
+export const dynamic = 'force-dynamic';
+
 export default async function Dashboard() {
   const cookieStore = cookies();
   const supabase = createServerClient();
