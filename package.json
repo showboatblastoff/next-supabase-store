@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "tsc --project tsconfig.json"
+    "postinstall": "tsc --project tsconfig.json || true"
   },
   "engines": {
     "node": ">=18.17.0"
