@@ -1,10 +1,27 @@
-import { createServerClient } from '@/lib/supabase';
-import { cookies } from 'next/headers';
-
-// Add dynamic export to avoid prerendering during build
+// Force dynamic rendering with edge runtime
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
-export default async function Dashboard() {
+import { Suspense } from 'react';
+
+function LoadingDashboard() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6">
+      <div className="py-4">
+        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+      </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    </div>
+  );
+}
+
+async function DashboardContent() {
+  // Import these at runtime to avoid build-time initialization
+  const { createServerClient } = await import('@/lib/supabase');
+  const { cookies } = await import('next/headers');
+
   const cookieStore = cookies();
   const supabase = createServerClient();
   
@@ -34,7 +51,7 @@ export default async function Dashboard() {
           <div className="px-4 py-5 sm:px-6">
             <h2 className="text-lg font-medium text-gray-900">Welcome to your dashboard</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Here's an overview of your account.
+              Here&apos;s an overview of your account.
             </p>
           </div>
           
@@ -169,5 +186,13 @@ export default async function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<LoadingDashboard />}>
+      <DashboardContent />
+    </Suspense>
   );
 } 

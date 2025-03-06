@@ -3,26 +3,29 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createBrowserClient } from '@/lib/supabase';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-// Add dynamic export to avoid prerendering during build
+// Export as force-dynamic to prevent static pre-rendering
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createBrowserClient();
 
-  const handleEmailSignUp = async (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      // Initialize Supabase client only when needed
+      const supabase = createClientComponentClient();
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -54,7 +57,7 @@ export default function SignUp() {
 
       router.push('/dashboard');
       router.refresh();
-    } catch (err: unknown) {
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred during sign up';
       setError(errorMessage);
     } finally {
@@ -67,6 +70,9 @@ export default function SignUp() {
     setError(null);
 
     try {
+      // Initialize Supabase client only when needed
+      const supabase = createClientComponentClient();
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -75,7 +81,7 @@ export default function SignUp() {
       });
 
       if (error) throw error;
-    } catch (err: unknown) {
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred during Google sign up';
       setError(errorMessage);
       setLoading(false);

@@ -3,25 +3,27 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createBrowserClient } from '@/lib/supabase';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-// Add dynamic export to avoid prerendering during build
+// Export as force-dynamic to prevent static pre-rendering
 export const dynamic = 'force-dynamic';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createBrowserClient();
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
+  const handleEmailSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      // Initialize Supabase client only when needed
+      const supabase = createClientComponentClient();
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -30,7 +32,7 @@ export default function SignIn() {
       if (error) throw error;
       router.push('/dashboard');
       router.refresh();
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'An error occurred during sign in');
     } finally {
       setLoading(false);
@@ -42,6 +44,9 @@ export default function SignIn() {
     setError(null);
 
     try {
+      // Initialize Supabase client only when needed
+      const supabase = createClientComponentClient();
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -50,7 +55,7 @@ export default function SignIn() {
       });
 
       if (error) throw error;
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'An error occurred during Google sign in');
       setLoading(false);
     }
